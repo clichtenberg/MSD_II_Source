@@ -59,31 +59,139 @@ uint8_t twim_ping_chip(volatile avr32_twim_t *twim, uint32_t addr){
 	
 	uint8_t test_data = 0;
 	
-	if(twim_write(twim, test_data, 0, addr)){
+	if(twim_write(twim, test_data, addr, 0)){
 		// TWIM write successful
 		return 1;
 	}
 	return 0; // TWIM write failed
 }
 
-uint8_t twim_write(volatile avr32_twim_t *twim, uint8_t buff_data, uint32_t tx_bytes, uint32_t twim_addr){
+uint8_t twim_write(volatile avr32_twim_t *twim, uint16_t buff_data, uint32_t twim_addr, uint8_t dac_cmd){
+	
+	// Command for DAC write
+	// binary: 01011000
+	// Where: 010 = cmd code (see DAC datasheet)
+	// 11 = write code
+	// 00 = channel A select
+	// 0 = UDAC'
+	uint8_t cmd_dac_wr = 88;
+	
 	// Clear THR
 	twim->thr = 0x00000000;
 	twim->scr = 0xFFFFFFFF;
 	twim->CR.mdis = 1;
 	
-	// Set data buffer
-	twim->thr = buff_data << AVR32_TWIM_THR_TXDATA_OFFSET;
-	
-	// Set command register to start transfer
-	twim->cmdr = ((twim_addr << AVR32_TWIM_CMDR_SADR_OFFSET)|(tx_bytes << AVR32_TWIM_CMDR_NBYTES_OFFSET)
-					|(1 << AVR32_TWIM_CMDR_VALID_OFFSET)|(1 << AVR32_TWIM_CMDR_START_OFFSET)|(1 << AVR32_TWIM_CMDR_STOP_OFFSET));
-	
-	// Enable master to start transfer
-	twim->CR.men = 1;
-	
-	// Wait for transfer to finish
-	while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK));
+	// TODO: ADD dac_cmd support (see DAC data sheet for transmission formats)
+	switch(dac_cmd){
+		
+		// Ping DAC
+		case 0:
+			// Set data buffer
+			twim->thr = buff_data << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// Set command register to start transfer
+			twim->cmdr = ((twim_addr << AVR32_TWIM_CMDR_SADR_OFFSET)|(0 << AVR32_TWIM_CMDR_NBYTES_OFFSET)
+			|(1 << AVR32_TWIM_CMDR_VALID_OFFSET)|(1 << AVR32_TWIM_CMDR_START_OFFSET)|(1 << AVR32_TWIM_CMDR_STOP_OFFSET));
+			
+			// Enable master to start transfer
+			twim->CR.men = 1;
+			
+			// Wait for transfer to finish
+			while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK));
+			
+			break;
+			
+		// Wakeup DAC
+		case 1:
+			// Set data buffer
+			twim->thr = 0 << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// Set command register to start transfer
+			twim->cmdr = ((twim_addr << AVR32_TWIM_CMDR_SADR_OFFSET)|(2 << AVR32_TWIM_CMDR_NBYTES_OFFSET)
+			|(1 << AVR32_TWIM_CMDR_VALID_OFFSET)|(1 << AVR32_TWIM_CMDR_START_OFFSET)|(1 << AVR32_TWIM_CMDR_STOP_OFFSET));
+			
+			// Enable master to start transfer
+			twim->CR.men = 1;
+			// Wait to load next byte
+			while(!(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
+			twim->thr = buff_data << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// Wait for transfer to finish
+			while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK));
+			
+			break;
+			
+		// Software Update
+		case 2:
+			// Set data buffer
+			twim->thr = 0 << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// Set command register to start transfer
+			twim->cmdr = ((twim_addr << AVR32_TWIM_CMDR_SADR_OFFSET)|(2 << AVR32_TWIM_CMDR_NBYTES_OFFSET)
+			|(1 << AVR32_TWIM_CMDR_VALID_OFFSET)|(1 << AVR32_TWIM_CMDR_START_OFFSET)|(1 << AVR32_TWIM_CMDR_STOP_OFFSET));
+			
+			// Enable master to start transfer
+			twim->CR.men = 1;
+			
+			// Wait to load next byte
+			while(!(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
+			twim->thr = buff_data << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// Wait for transfer to finish
+			while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK));
+			
+			break;
+			
+		// Reset DAC
+		case 3:
+			// Set data buffer
+			twim->thr = 0 << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// Set command register to start transfer
+			twim->cmdr = ((twim_addr << AVR32_TWIM_CMDR_SADR_OFFSET)|(2 << AVR32_TWIM_CMDR_NBYTES_OFFSET)
+			|(1 << AVR32_TWIM_CMDR_VALID_OFFSET)|(1 << AVR32_TWIM_CMDR_START_OFFSET)|(1 << AVR32_TWIM_CMDR_STOP_OFFSET));
+			
+			// Enable master to start transfer
+			twim->CR.men = 1;
+			
+			// Wait to load next byte
+			while(!(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
+			twim->thr = buff_data << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// Wait for transfer to finish
+			while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK));
+			
+			break;
+			
+		// Write to DAC
+		case 4:
+			// Set data buffer
+			twim->thr = cmd_dac_wr << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// Set command register to start transfer
+			twim->cmdr = ((twim_addr << AVR32_TWIM_CMDR_SADR_OFFSET)|(3 << AVR32_TWIM_CMDR_NBYTES_OFFSET)
+			|(1 << AVR32_TWIM_CMDR_VALID_OFFSET)|(1 << AVR32_TWIM_CMDR_START_OFFSET)|(1 << AVR32_TWIM_CMDR_STOP_OFFSET));
+			
+			// Enable master to start transfer
+			twim->CR.men = 1;
+			
+			// Wait to load next byte (1st data byte)
+			while(!(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
+			twim->thr = ((uint8_t)((buff_data & 0x0F00) >> 8)) << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// 2nd data byte
+			while(!(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
+			twim->thr = ((uint8_t)(buff_data & 0x00FF)) << AVR32_TWIM_THR_TXDATA_OFFSET;
+			
+			// Wait for transfer to finish
+			while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK));
+			
+			break;
+			
+		// Invalid command
+		default:
+			return 0;
+	}
 	
 	if((twim->sr & AVR32_TWIM_SR_ARBLST_MASK) || (twim->sr & AVR32_TWIM_SR_DNAK_MASK) || (twim->sr & AVR32_TWIM_SR_ANAK_MASK)){
 		// Transfer failed due to no ACK received or state issue in SDA bus
@@ -103,28 +211,18 @@ uint8_t twim_write(volatile avr32_twim_t *twim, uint8_t buff_data, uint32_t tx_b
 	return 1;
 }
 
-uint8_t dac_call_cmd(volatile avr32_twim_t *twim, uint32_t twim_addr){
-	
-	uint8_t twim_buffer;
-	
-	twim_buffer = 0;
-	while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK) && !(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
-	twim_write(twim, twim_buffer, 1, twim_addr);
-	if((twim->sr & AVR32_TWIM_SR_ARBLST_MASK) || (twim->sr & AVR32_TWIM_SR_DNAK_MASK) || (twim->sr & AVR32_TWIM_SR_ANAK_MASK)){
-		// uh oh problem
-		return 0;
-	}
-	// success
-	return 1;
-}
-
 uint8_t dac_wakeup_cmd(volatile avr32_twim_t *twim, uint32_t twim_addr){
 	
 	uint8_t twim_buffer;
-	
 	twim_buffer = 9;
-	while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK) && !(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
-	twim_write(twim, twim_buffer, 1, twim_addr);
+	
+	// Clear status register
+	twim->scr = 0xFFFFFFFF;
+	
+	// Write
+	twim_write(twim, twim_buffer, twim_addr, 1);
+	
+	// Error checks
 	if((twim->sr & AVR32_TWIM_SR_ARBLST_MASK) || (twim->sr & AVR32_TWIM_SR_DNAK_MASK) || (twim->sr & AVR32_TWIM_SR_ANAK_MASK)){
 		// uh oh problem
 		return 0;
@@ -136,10 +234,15 @@ uint8_t dac_wakeup_cmd(volatile avr32_twim_t *twim, uint32_t twim_addr){
 uint8_t dac_software_update(volatile avr32_twim_t *twim, uint32_t twim_addr){
 	
 	uint8_t twim_buffer;
-	
 	twim_buffer = 8;
-	while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK) && !(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
-	twim_write(twim, twim_buffer, 1, twim_addr);
+	
+	// Clear status register
+	twim->scr = 0xFFFFFFFF;
+	
+	// Write
+	twim_write(twim, twim_buffer, twim_addr, 2);
+	
+	// Error checks
 	if((twim->sr & AVR32_TWIM_SR_ARBLST_MASK) || (twim->sr & AVR32_TWIM_SR_DNAK_MASK) || (twim->sr & AVR32_TWIM_SR_ANAK_MASK)){
 		// uh oh problem
 		return 0;
@@ -151,10 +254,15 @@ uint8_t dac_software_update(volatile avr32_twim_t *twim, uint32_t twim_addr){
 uint8_t dac_reset_cmd(volatile avr32_twim_t *twim, uint32_t twim_addr){
 	
 	uint8_t twim_buffer;
-	
 	twim_buffer = 6;
-	while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK) && !(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
-	twim_write(twim, twim_buffer, 1, twim_addr);
+	
+	// Clear status register
+	twim->scr = 0xFFFFFFFF;
+	
+	// Write
+	twim_write(twim, twim_buffer, twim_addr, 3);
+	
+	// Error checks
 	if((twim->sr & AVR32_TWIM_SR_ARBLST_MASK) || (twim->sr & AVR32_TWIM_SR_DNAK_MASK) || (twim->sr & AVR32_TWIM_SR_ANAK_MASK)){
 		// uh oh problem
 		return 0;
@@ -163,18 +271,15 @@ uint8_t dac_reset_cmd(volatile avr32_twim_t *twim, uint32_t twim_addr){
 	return 1;
 }
 
-uint8_t dac_write_cmd(volatile avr32_twim_t *twim, uint32_t twim_addr){
+uint8_t dac_write_cmd(volatile avr32_twim_t *twim, uint32_t twim_addr, uint16_t twim_buffer){
 	
-	uint8_t twim_buffer;
+	// Clear status register
+	twim->scr = 0xFFFFFFFF;
 	
-	// binary: 01011000
-	// Where: 010 = cmd code (see DAC datasheet)
-	// 11 = write code
-	// 00 = channel A select
-	// 0 = UDAC'
-	twim_buffer = 88;
-	while(!(twim->sr & AVR32_TWIM_SR_IDLE_MASK) && !(twim->sr & AVR32_TWIM_SR_TXRDY_MASK));
-	twim_write(twim, twim_buffer, 1, twim_addr);
+	// Write
+	twim_write(twim, twim_buffer, twim_addr, 4);
+	
+	// Error checks
 	if((twim->sr & AVR32_TWIM_SR_ARBLST_MASK) || (twim->sr & AVR32_TWIM_SR_DNAK_MASK) || (twim->sr & AVR32_TWIM_SR_ANAK_MASK)){
 		// uh oh problem
 		return 0;

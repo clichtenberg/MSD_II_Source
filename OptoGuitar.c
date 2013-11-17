@@ -128,27 +128,10 @@ int main(void)
 		//summed_sig = adc_dma_loc[0];
 		summed_sig = 828;
 		
-		// TWIM communication
-		dac_call_cmd(twi, twim_addr);
-		dac_wakeup_cmd(twi, twim_addr);
-		
-		dac_call_cmd(twi, twim_addr);
-		dac_reset_cmd(twi, twim_addr);
-		
 		// DAC single write command
-		dac_write_cmd(twi, twim_addr);
+		twim_write(twi, 0, twim_addr, 0);
 		
-		// Ensure bus is idle
-		twim_buffer = (uint8_t)((summed_sig & 0x0F00) >> 8);
-		//while(!(twi->sr & AVR32_TWIM_SR_IDLE_MASK) && !(twi->sr & AVR32_TWIM_SR_TXRDY_MASK));
-		twim_write(twi, twim_buffer, 1, twim_addr);
-		// Ensure bus is idle, then transfer
-		twim_buffer = (uint8_t)(summed_sig & 0x00FF);
-		//while(!(twi->sr & AVR32_TWIM_SR_IDLE_MASK) && !(twi->sr & AVR32_TWIM_SR_TXRDY_MASK));
-		twim_write(twi, twim_buffer, 1, twim_addr);
-		// Update all outputs
-		dac_call_cmd(twi, twim_addr);
-		dac_software_update(twi, twim_addr);
+		twim_write(twi, summed_sig, twim_addr, 4);
 		
 		y++;
 	}

@@ -7,6 +7,7 @@
 
 #include "avr32\uc3l064.h"
 #include "avr32\gpio_211.h"
+#include "OptoGPIOConfig.h"
 
 void assign_gpio_module(unsigned int pin_num, unsigned int pin_mod){
 	volatile avr32_gpio_port_t *gpio_port = &AVR32_GPIO.port[pin_num>>5];

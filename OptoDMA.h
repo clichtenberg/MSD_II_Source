@@ -24,15 +24,6 @@
 void init_adc_dma(unsigned int channel, volatile avr32_pdca_channel_t *dma, volatile uint16_t *adc_buffer);
 
 /************************************************************************/
-/* Initialize DMA for TWIM
-/*
-/* Parameters:
-/* unsigned int channel - DMA channel number
-/* avr32_pdca_t *dma - DMA address
-/************************************************************************/
-void init_twim_dma(unsigned int channel, volatile avr32_pdca_channel_t *dma, volatile uint16_t *twim_buffer);
-
-/************************************************************************/
 /* Enable DMA for a given channel
 /*
 /* Parameters:

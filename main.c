@@ -59,7 +59,7 @@ volatile avr32_tc_channel_t *tc;
 /************************************************************************/
 __attribute__((__interrupt__))
 static void opto_isr(void){
-	
+	Disable_global_interrupt();
 	y = 0;
 	summed_sig = 0;
 	
@@ -82,12 +82,14 @@ static void opto_isr(void){
 	dac_software_update(twi, twim_addr);
 	
 	y++;
+	Enable_global_interrupt();
 }
 
 
 int main(void)
 {
-	//board_init();
+	// Need to ensure no interrupts trigger while configuring system
+	Disable_global_interrupt();
 	
 	// Configure clock source to run at 30 MHz with RC120MHz clock
 	// Default clock is RCSYS at 115 kHz

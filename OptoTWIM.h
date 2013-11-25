@@ -18,6 +18,17 @@
 #include "avr32\twim_101.h"
 
 /************************************************************************/
+/* NOTE:
+/* To use TWIM interface, you'll need to add these lines back into
+/* main.c:
+/* volatile avr32_twim_t *twi = &AVR32_TWIM1;
+/* enable_gpio_pin(AVR32_PIN_PA17);
+/* enable_gpio_pin(AVR32_PIN_PA05);
+/* assign_gpio_module(AVR32_TWIMS1_TWCK_0_0_PIN, AVR32_TWIMS1_TWCK_0_0_FUNCTION);
+/* assign_gpio_module(AVR32_TWIMS1_TWD_0_PIN, AVR32_TWIMS1_TWD_0_FUNCTION);
+/************************************************************************/
+
+/************************************************************************/
 /* Enable and configure the TWI
 /*
 /* Parameters:

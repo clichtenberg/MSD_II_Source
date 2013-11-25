@@ -16,7 +16,7 @@ void adc_init(volatile avr32_adcifb_t *adc){
 	}
 	
 	adc->CR.en = 1; // enables adc interface
-	adc->ACR.res = AVR32_ADCIFB_ACR_RES_10BIT; // using 11 bits (0x02)
+	adc->ACR.res = AVR32_ADCIFB_ACR_RES_10BIT;
 	// sampling frequency is now 460kSPS/4 = 115 kSPS (kHz)
 	// Not setting prescale since we need ADC clock to run as fast as possible
 	adc->ACR.shtim = 0xF; // sample and hold time

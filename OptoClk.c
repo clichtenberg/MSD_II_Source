@@ -21,12 +21,13 @@ void initClock(volatile avr32_scif_t *clk, volatile avr32_pm_t *pm_set){
 	while(!(pm_set->sr & AVR32_PM_SR_CKRDY_MASK)); // clock sel must not be written while ckrdy is 0
 	
 	uint8_t div_val = 1; // need to divide RCMHz osc freq to get 30 MHz
-	uint8_t div_pb = 1;
+	uint8_t div_pba = 1;
+	uint8_t div_pbb = 1;
 	
 	while(!(pm_set->sr & AVR32_PM_SR_CKRDY_MASK));
 	// Set division ratio
-	AVR32_PM.unlock = ((AVR32_PM_UNLOCK_KEY_VALUE << AVR32_PM_UNLOCK_KEY_OFFSET)|AVR32_PM_CPUSEL);
-	AVR32_PM.cpusel = ((1 << AVR32_PM_CPUSEL_CPUDIV_OFFSET)|(div_val << AVR32_PM_CPUSEL_CPUSEL_OFFSET));
+	pm_set->unlock = ((AVR32_PM_UNLOCK_KEY_VALUE << AVR32_PM_UNLOCK_KEY_OFFSET)|AVR32_PM_CPUSEL);
+	pm_set->cpusel = ((1 << AVR32_PM_CPUSEL_CPUDIV_OFFSET)|(div_val << AVR32_PM_CPUSEL_CPUSEL_OFFSET));
 	
 	while(!(pm_set->sr & AVR32_PM_SR_CKRDY_MASK));
 	
@@ -34,18 +35,18 @@ void initClock(volatile avr32_scif_t *clk, volatile avr32_pm_t *pm_set){
 		return;
 	}
 	
-	AVR32_PM.unlock = ((AVR32_PM_UNLOCK_KEY_VALUE << AVR32_PM_UNLOCK_KEY_OFFSET)|AVR32_PM_PBASEL);
-	AVR32_PM.pbasel = ((1 << AVR32_PM_PBASEL_PBDIV_OFFSET)|(div_pb << AVR32_PM_PBASEL_PBSEL_OFFSET));
+	pm_set->unlock = ((AVR32_PM_UNLOCK_KEY_VALUE << AVR32_PM_UNLOCK_KEY_OFFSET)|AVR32_PM_PBASEL);
+	pm_set->pbasel = ((1 << AVR32_PM_PBASEL_PBDIV_OFFSET)|(div_pba << AVR32_PM_PBASEL_PBSEL_OFFSET));
 	
 	while(!(pm_set->sr & AVR32_PM_SR_CKRDY_MASK));
 	
-	AVR32_PM.unlock = ((AVR32_PM_UNLOCK_KEY_VALUE << AVR32_PM_UNLOCK_KEY_OFFSET)|AVR32_PM_PBBSEL);
-	AVR32_PM.pbasel = ((1 << AVR32_PM_PBBSEL_PBDIV_OFFSET)|(div_pb << AVR32_PM_PBBSEL_PBSEL_OFFSET));
+	pm_set->unlock = ((AVR32_PM_UNLOCK_KEY_VALUE << AVR32_PM_UNLOCK_KEY_OFFSET)|AVR32_PM_PBBSEL);
+	pm_set->pbbsel = ((1 << AVR32_PM_PBBSEL_PBDIV_OFFSET)|(div_pbb << AVR32_PM_PBBSEL_PBSEL_OFFSET));
 	
 	while(!(pm_set->sr & AVR32_PM_SR_CKRDY_MASK));
 	
-	AVR32_PM.unlock = ((AVR32_PM_UNLOCK_KEY_VALUE << AVR32_PM_UNLOCK_KEY_OFFSET)|AVR32_PM_MCCTRL);
-	AVR32_PM.mcctrl = AVR32_PM_MCSEL_RC120M;
+	pm_set->unlock = ((AVR32_PM_UNLOCK_KEY_VALUE << AVR32_PM_UNLOCK_KEY_OFFSET)|AVR32_PM_MCCTRL);
+	pm_set->mcctrl = AVR32_PM_MCSEL_RC120M;
 	
 	while(!(pm_set->sr & AVR32_PM_SR_CKRDY_MASK));
 }

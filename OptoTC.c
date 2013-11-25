@@ -9,7 +9,7 @@
 
 void initTC(unsigned int channel, volatile avr32_tc_channel_t *tc){
 	
-	tc = &AVR32_TC0.channel[channel];
+	//tc = &AVR32_TC0.channel[channel];
 	
 	// We need a trigger every 0.021ms or 0.000021 s
 	// PBA = 30 MHz
@@ -36,8 +36,8 @@ void initTC(unsigned int channel, volatile avr32_tc_channel_t *tc){
 }
 
 void initTC_interrupts(unsigned int channel, volatile avr32_tc_channel_t *tc){
-	
-	tc = &AVR32_TC0.channel[channel];
+	uint8_t temp;
+	Disable_global_interrupt();
 	
 	// Enable interrupts
 	tc->ier = (0 << AVR32_TC_ETRGS_OFFSET|
@@ -48,11 +48,8 @@ void initTC_interrupts(unsigned int channel, volatile avr32_tc_channel_t *tc){
 								0 << AVR32_TC_CPAS_OFFSET|
 								0 << AVR32_TC_LOVRS_OFFSET|
 								0 << AVR32_TC_COVFS_OFFSET);
+								
 	// Disable undesired interrupts
-	/**if(Is_global_interrupt_enabled()){
-		Disable_global_interrupt();
-	}*/
-	
 	tc->idr = (1 << AVR32_TC_ETRGS_OFFSET|
 								1 << AVR32_TC_LDRBS_OFFSET|
 								1 << AVR32_TC_LDRAS_OFFSET|
@@ -61,30 +58,26 @@ void initTC_interrupts(unsigned int channel, volatile avr32_tc_channel_t *tc){
 								1 << AVR32_TC_CPAS_OFFSET|
 								1 << AVR32_TC_LOVRS_OFFSET|
 								1 << AVR32_TC_COVFS_OFFSET);
-	/**if(Is_global_interrupt_enabled()){
-		Enable_global_interrupt();
-	}*/
-	// Reading SR also clears corresponding interrupts
-	//tc->channel[channel].sr;
+	Enable_global_interrupt();
+	temp = tc->sr;
 }
 
 
 void set_TC_RC(unsigned int channel, volatile avr32_tc_channel_t *tc){
 	
-	tc = &AVR32_TC0.channel[channel];
+	//tc = &AVR32_TC0.channel[channel];
 	
 	// We need a trigger every 0.021ms or 0.000021 s
 	// PBA = 30 MHz
 	// RC value = (PBA_f/n)*0.000021 and must be an integer
 	// Thus, it makes sense to divide PBA by 2 so RC = 315
 	
-	tc->rc = (315 & AVR32_TC_RC_MASK) << AVR32_TC_RC_OFFSET;
+	//tc->rc = Wr_bitfield(tc->rc, AVR32_TC_RC_MASK, 315);
+	tc->rc = (156 & AVR32_TC_RC_MASK) << AVR32_TC_RC_OFFSET;
 }
 
 void start_TC(unsigned int channel, volatile avr32_tc_channel_t *tc){
 	
-	tc = &AVR32_TC0.channel[channel];
-	
-	tc->ccr = (AVR32_TC_SWTRG_MASK << AVR32_TC_SWTRG_OFFSET| 
-								AVR32_TC_CLKEN_MASK << AVR32_TC_CLKEN_OFFSET);
+	//tc = &AVR32_TC0.channel[channel];
+	tc->ccr = (1 << AVR32_TC_SWTRG_OFFSET|1 << AVR32_TC_CLKEN_OFFSET);
 }

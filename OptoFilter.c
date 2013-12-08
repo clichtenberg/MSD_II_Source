@@ -7,7 +7,7 @@
 
 #include "OptoFilter.h"
 
-uint16_t fir_bpf(uint16_t signal_data){
+uint16_t fir_bpf(uint16_t *signal_data){
 	// Bandpass Filter
 	/**
 	dsp16_t *vect1,
@@ -19,6 +19,14 @@ uint16_t fir_bpf(uint16_t signal_data){
 	//dsp16_filt_fir();
 }
 
-uint16_t sum_signal(uint16_t signal_data){
+uint16_t sum_signal(uint16_t *signal_data){
 	// summation
+	int i = 0;
+	uint16_t signal_sum;
+	
+	for(i = 0; i<6; i++){
+		if(signal_sum == 0x3FF){
+			return signal_sum;
+		}
+	}
 }

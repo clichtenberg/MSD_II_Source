@@ -30,6 +30,7 @@
 #include "OptoGPIOConfig.h"
 #include "OptoClk.h"
 #include "OptoTC.h"
+#include "OptoFilter.h"
 
 #define cpu_freq	30000000
 #define pb_freq		30000000
@@ -44,7 +45,6 @@
 volatile avr32_adcifb_t *adc = &AVR32_ADCIFB;
 // DMA storage location for ADC channels
 uint16_t adc_dma_loc[6];
-uint16_t y = 0;
 uint16_t summed_sig = 0;
 // DMA interface register map
 avr32_pdca_channel_t *dma_adc;
@@ -60,38 +60,16 @@ volatile avr32_tc_channel_t *tc = &AVR32_TC0.channel[1];
 __attribute__((__interrupt__))
 static void opto_isr(void){
 	uint32_t temp = 0;
-	
 	Disable_global_interrupt();
 
 	summed_sig = 0;
 	
-	// Wait until ADC ready
-	//while(conversion_status(adc) == 0){
-		// wait
-	//}
 	// Start ADC conversion
 	adc_start(adc);
-	// Wait for conversion to finish
-	//while(conversion_status(adc) == 0){
-		// wait
-	//}
 	
-	summed_sig = adc_dma_loc[0];
+	summed_sig = sum_signal(adc_dma_loc);
 	write_spi(spi, summed_sig);
 	
-	/*if(y == 0){
-		summed_sig = 0;
-		// SPI communication
-		write_spi(spi, summed_sig);
-		y=1;
-	}
-	
-	else{
-		summed_sig = 0x3FF;
-		// SPI communication
-		write_spi(spi, summed_sig);
-		y=0;
-	}*/
 	tc->idr = 0xFFFF;
 	temp = tc->idr;
 	initTC_interrupts(1, tc);
@@ -122,20 +100,16 @@ int main(void)
 	
 	// Configure and enable GPIO for ADC and SPI
 	assign_gpio_module(AVR32_ADCIFB_AD_0_PIN, AVR32_ADCIFB_AD_0_FUNCTION);
-	//assign_gpio_module(AVR32_ADCIFB_AD_1_PIN, AVR32_ADCIFB_AD_1_FUNCTION);
-	//assign_gpio_module(AVR32_ADCIFB_AD_2_PIN, AVR32_ADCIFB_AD_2_FUNCTION);
-	//assign_gpio_module(AVR32_ADCIFB_AD_4_PIN, AVR32_ADCIFB_AD_4_FUNCTION);
-	//assign_gpio_module(AVR32_ADCIFB_AD_5_PIN, AVR32_ADCIFB_AD_5_FUNCTION);
-	//assign_gpio_module(AVR32_ADCIFB_AD_6_PIN, AVR32_ADCIFB_AD_6_FUNCTION);
+	assign_gpio_module(AVR32_ADCIFB_AD_1_PIN, AVR32_ADCIFB_AD_1_FUNCTION);
+	assign_gpio_module(AVR32_ADCIFB_AD_2_PIN, AVR32_ADCIFB_AD_2_FUNCTION);
+	assign_gpio_module(AVR32_ADCIFB_AD_4_PIN, AVR32_ADCIFB_AD_4_FUNCTION);
+	assign_gpio_module(AVR32_ADCIFB_AD_5_PIN, AVR32_ADCIFB_AD_5_FUNCTION);
+	assign_gpio_module(AVR32_ADCIFB_AD_6_PIN, AVR32_ADCIFB_AD_6_FUNCTION);
+	
 	assign_gpio_module(AVR32_SPI_SCK_0_0_PIN, AVR32_SPI_SCK_0_0_FUNCTION);
 	assign_gpio_module(AVR32_SPI_MOSI_0_0_PIN, AVR32_SPI_MOSI_0_0_FUNCTION);
 	assign_gpio_module(AVR32_SPI_MISO_0_0_PIN, AVR32_SPI_MISO_0_0_FUNCTION);
 	assign_gpio_module(AVR32_SPI_NPCS_0_0_PIN, AVR32_SPI_NPCS_0_0_FUNCTION);
-	
-	assign_gpio_module(AVR32_SPI_SCK_0_1_PIN, AVR32_SPI_SCK_0_1_FUNCTION);
-	assign_gpio_module(AVR32_SPI_MOSI_0_1_PIN, AVR32_SPI_MOSI_0_1_FUNCTION);
-	assign_gpio_module(AVR32_SPI_MISO_0_1_PIN, AVR32_SPI_MISO_0_1_FUNCTION);
-	assign_gpio_module(AVR32_SPI_NPCS_0_1_PIN, AVR32_SPI_NPCS_0_1_FUNCTION);
 	
 	// Initialize ADC
 	adc_init(adc);
@@ -145,11 +119,11 @@ int main(void)
 	
 	// Enable ADC channels
 	adc_enable(adc, AVR32_ADCIFB_CH0);
-	//adc_enable(adc, AVR32_ADCIFB_CH1);
-	//adc_enable(adc, AVR32_ADCIFB_CH2);
-	//adc_enable(adc, AVR32_ADCIFB_CH4);
-	//adc_enable(adc, AVR32_ADCIFB_CH5);
-	//adc_enable(adc, AVR32_ADCIFB_CH6);
+	adc_enable(adc, AVR32_ADCIFB_CH1);
+	adc_enable(adc, AVR32_ADCIFB_CH2);
+	adc_enable(adc, AVR32_ADCIFB_CH4);
+	adc_enable(adc, AVR32_ADCIFB_CH5);
+	adc_enable(adc, AVR32_ADCIFB_CH6);
 	
 	// Initialize SPI
 	initSPI(spi);
@@ -165,8 +139,7 @@ int main(void)
 	set_TC_RC(1, tc);
 	initTC_interrupts(1, tc);
 	start_TC(1, tc);
-	uint8_t x = 0;
-	
+
 	// Wait for ISR (triggers every 0.021 ms or 48 kHz)
 	while(1){
 		// Wait for it....

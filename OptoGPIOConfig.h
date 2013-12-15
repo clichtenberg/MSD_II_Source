@@ -16,7 +16,7 @@
 /*
 /* Parameters:
 /* unsigned int pin_num - pin number
-/* unsigned int pin_mod - module to enable                                                                    */
+/* unsigned int pin_mod - module to enable
 /************************************************************************/
 void assign_gpio_module(unsigned int pin_num, unsigned int pin_mod);
 
@@ -24,7 +24,7 @@ void assign_gpio_module(unsigned int pin_num, unsigned int pin_mod);
 /* Enable GPIO functionality for a given GPIO pin (useful for debugging)
 /*
 /* Parameters:
-/* unsigned int pin_num - pin number                                                                   */
+/* unsigned int pin_num - pin number
 /************************************************************************/
 void enable_gpio_pin(unsigned int pin_num);
 

@@ -18,8 +18,9 @@
 /* Initialize DMA for ADC
 /*
 /* Parameters:
+/* volatile avr32_pdca_channel_t *dma - base address of DMA
 /* unsigned int channel - DMA channel number
-/* avr32_pdca_t *dma - DMA address
+/* volatile uint16_t *adc_buffer - address to store ADC samples
 /************************************************************************/
 void init_adc_dma(unsigned int channel, volatile avr32_pdca_channel_t *dma, volatile uint16_t *adc_buffer);
 
@@ -27,6 +28,7 @@ void init_adc_dma(unsigned int channel, volatile avr32_pdca_channel_t *dma, vola
 /* Enable DMA for a given channel
 /*
 /* Parameters:
+/* volatile avr32_pdca_channel_t *dma - base address of DMA
 /* unsigned int channel - DMA channel number
 /************************************************************************/
 void enable_dma(unsigned int channel, volatile avr32_pdca_channel_t *dma);
@@ -35,6 +37,7 @@ void enable_dma(unsigned int channel, volatile avr32_pdca_channel_t *dma);
 /* Disable DMA for a given channel
 /*
 /* Parameters:
+/* volatile avr32_pdca_channel_t *dma - base address of DMA
 /* unsigned int channel - DMA channel number
 /************************************************************************/
 void disable_dma(unsigned int channel, volatile avr32_pdca_channel_t *dma);
@@ -43,6 +46,7 @@ void disable_dma(unsigned int channel, volatile avr32_pdca_channel_t *dma);
 /* Get the DMA channel transfer status
 /*
 /* Parameters:
+/* volatile avr32_pdca_channel_t *dma - base address of DMA
 /* unsigned int channel - DMA channel number
 /*
 /* Returns:

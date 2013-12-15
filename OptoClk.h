@@ -16,8 +16,14 @@
 
 #include <stdint.h>
 
+/************************************************************************/
+/* Configure, initialize, and start RC clock (120 MHz). Clocks are
+/* managed by system control interface and power management
+/*
+/* Parameters:
+/* volatile avr32_scif_t *clk - base address of System Control Interface
+/* volatile avr32_pm_t *pm_set - base address of Power Management
+/************************************************************************/
 void initClock(volatile avr32_scif_t *clk, volatile avr32_pm_t *pm_set);
-
-uint8_t delay(unsigned int time);
 
 #endif /* OPTOCLK_H_ */

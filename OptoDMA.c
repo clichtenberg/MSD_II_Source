@@ -14,13 +14,13 @@ void init_adc_dma(unsigned int channel, volatile avr32_pdca_channel_t *dma, vola
 	if(channel == AVR32_PDCA_PID_ADC_RX){
 		// ADC
 		dma->mar = (void*)adc_buffer;
-		dma->TCR.tcv = 1; // change to 6 later
+		dma->TCR.tcv = 6; // change to 6 later
 		dma->PSR.pid = AVR32_PDCA_PID_ADC_RX;
 		dma->marr = (void*)adc_buffer;
-		dma->TCRR.tcrv = 1; // change to 6 later
+		dma->TCRR.tcrv = 6; // change to 6 later
 		dma->MR.size = AVR32_PDCA_SIZE_HALF_WORD; // Halfword
 		dma->MR.etrig = 0;
-		dma->MR.ring  = 1;
+		dma->MR.ring  = 1; // Ring buffer mode for continuous ADC sampling
 	}
 	else{
 		return;

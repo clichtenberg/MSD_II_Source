@@ -50,10 +50,3 @@ void initClock(volatile avr32_scif_t *clk, volatile avr32_pm_t *pm_set){
 	
 	while(!(pm_set->sr & AVR32_PM_SR_CKRDY_MASK));
 }
-
-uint8_t delay(unsigned int time){
-	while(time != 0){
-		--time;
-	}
-	return 1;
-}

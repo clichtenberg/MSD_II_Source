@@ -17,12 +17,40 @@
 #include "avr32\uc3l064.h"
 #include "avr32\tc_2231.h"
 
+/************************************************************************/
+/* Initialize the Timer/Counter
+/*
+/* Parameters:
+/* volatile avr32_tc_channel_t *tc - base address of TC module
+/* unsigned int channel - TC channel
+/************************************************************************/
 void initTC(unsigned int channel, volatile avr32_tc_channel_t *tc);
 
+/************************************************************************/
+/* Initialize interrupts for TC
+/*
+/* Parameters:
+/* volatile avr32_tc_channel_t *tc - base address of TC module
+/* unsigned int channel - TC channel
+/************************************************************************/
 void initTC_interrupts(unsigned int channel, volatile avr32_tc_channel_t *tc);
 
+/************************************************************************/
+/* Set the RC value for TC
+/*
+/* Parameters:
+/* volatile avr32_tc_channel_t *tc - base address of TC module
+/* unsigned int channel - TC channel
+/************************************************************************/
 void set_TC_RC(unsigned int channel, volatile avr32_tc_channel_t *tc);
 
+/************************************************************************/
+/* Start the TC
+/*
+/* Parameters:
+/* volatile avr32_tc_channel_t *tc - base address of TC module
+/* unsigned int channel - TC channel
+/************************************************************************/
 void start_TC(unsigned int channel, volatile avr32_tc_channel_t *tc);
 
 #endif /* OPTOTC_H_ */

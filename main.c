@@ -1,10 +1,9 @@
 /*
- * OptoGuitar.c
- *
+ *  main.c
  * 
  *  Author: Caroline Lichtenberger
  * 
- *	NOTE 1: unless preceded by Opto in the header file name,
+ *	NOTE 1: Exception of main.c and unless preceded by Opto in the header file name,
  *	header file is property of and authored by Atmel Corporation
  *	(see copyright notices in respective header/source files)
  */ 
